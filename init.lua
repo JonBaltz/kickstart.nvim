@@ -55,6 +55,11 @@ require('lazy').setup({
   },
 
   {
+    'jose-elias-alvarez/null-ls.nvim',
+    dependencies = { 'nvim-lua/plenary.nvim' }
+  },
+
+  {
     -- Autocompletion
     'hrsh7th/nvim-cmp',
     dependencies = {
@@ -197,6 +202,7 @@ vim.wo.signcolumn = 'yes'
 -- Decrease update time
 vim.o.updatetime = 250
 vim.o.timeoutlen = 300
+vim.cmd [[autocmd! CursorHold,CursorHoldI * lua vim.diagnostic.open_float(nil, {focus=false, scope="cursor"})]]
 
 -- Set completeopt to have a better completion experience
 vim.o.completeopt = 'menuone,noselect'
@@ -423,12 +429,26 @@ mason_lspconfig.setup_handlers {
       capabilities = capabilities,
       on_attach = on_attach,
       settings = servers[server_name],
+      root_dir = function() return vim.loop.cwd() end
     }
   end,
 }
 
--- [[ Configure nvim-cmp ]]
--- See `:help cmp`
+-- null-ls setup
+local null_ls = require("null-ls")
+local formatting = null_ls.builtins.formatting
+
+null_ls.setup({
+  sources = {
+    formatting.stylua,
+    formatting.prettierd,
+    null_ls.builtins.diagnostics.eslint_d,
+    null_ls.builtins.code_actions.eslint_d,
+    null_ls.builtins.completion.spell,
+  },
+})
+
+-- nvim-cmp setup
 local cmp = require 'cmp'
 local luasnip = require 'luasnip'
 require('luasnip.loaders.from_vscode').lazy_load()
